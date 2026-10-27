@@ -1,0 +1,12 @@
+{
+  "name": "sales-practice-room",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Voice roleplay trainer: sales reps call an AI customer and get a scored review.",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

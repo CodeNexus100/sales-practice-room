@@ -1,0 +1,1258 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sales Practice Room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+/* Quiet, monochrome and consistent: one ink colour, soft neutrals, and colour only where it carries meaning
+   (scores, live state, warnings). Serif for display moments, sans for everything you read or touch. */
+:root{
+  --bg:#F7F7F5; --surface:#FFFFFF; --surface-2:#F1F1EE; --line:#E7E7E3; --line-2:#D8D8D3;
+  --ink:#111111; --muted:#6F6F6A; --faint:#A6A6A0;
+  --accent:#111111; --accent-soft:rgba(17,17,17,.05); --accent-ink:#FFFFFF;
+  --pen:#C2410C; --pen-soft:rgba(194,65,12,.08);
+  --good:#15803D; --good-soft:rgba(21,128,61,.09); --warn:#B45309; --bad:#B91C1C;
+  --live:#16A34A;
+  --shadow:0 1px 2px rgba(17,17,17,.04),0 8px 24px rgba(17,17,17,.04);
+  --f-display:'Instrument Serif',Georgia,'Times New Roman',serif;
+  --f-body:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-mono:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --r:18px; --r-sm:11px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0A0A0A; --surface:#121212; --surface-2:#1A1A1A; --line:#222222; --line-2:#2F2F2F;
+    --ink:#EDEDEA; --muted:#8E8E89; --faint:#5A5A56;
+    --accent:#EDEDEA; --accent-soft:rgba(255,255,255,.06); --accent-ink:#0A0A0A;
+    --pen:#FB923C; --pen-soft:rgba(251,146,60,.10);
+    --good:#4ADE80; --good-soft:rgba(74,222,128,.10); --warn:#FBBF24; --bad:#F87171;
+    --live:#22C55E; --shadow:none;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0A0A0A; --surface:#121212; --surface-2:#1A1A1A; --line:#222222; --line-2:#2F2F2F;
+  --ink:#EDEDEA; --muted:#8E8E89; --faint:#5A5A56;
+  --accent:#EDEDEA; --accent-soft:rgba(255,255,255,.06); --accent-ink:#0A0A0A;
+  --pen:#FB923C; --pen-soft:rgba(251,146,60,.10);
+  --good:#4ADE80; --good-soft:rgba(74,222,128,.10); --warn:#FBBF24; --bad:#F87171;
+  --live:#22C55E; --shadow:none;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14.5px;line-height:1.55;letter-spacing:-.005em;
+  padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));padding-block:0 56px}
+.wrap{max-width:1140px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1,h2,h3{margin:0;text-wrap:balance;font-weight:400}
+h1,h2{font-family:var(--f-display);letter-spacing:-.01em}
+h3{font-family:var(--f-body);font-size:13px;font-weight:600;letter-spacing:.01em}
+p{margin:0}
+.label{font-size:11px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.hint{font-size:13px;color:var(--muted)}
+button,select,input,textarea{font:inherit;color:inherit;letter-spacing:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+::selection{background:var(--ink);color:var(--bg)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);min-width:0;box-shadow:var(--shadow)}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;
+  padding-block:16px;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14.5px;letter-spacing:-.01em}
+.mark{width:22px;height:22px;border-radius:7px;background:var(--ink);position:relative;flex:none}
+.mark::after{content:"";position:absolute;inset:6px;border-radius:50%;border:1.5px solid var(--bg)}
+.status{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+.status i{width:7px;height:7px;border-radius:50%;background:var(--faint)}
+.status.live i{background:var(--live);box-shadow:0 0 0 3px color-mix(in srgb,var(--live) 18%,transparent)}
+.status.off i{background:var(--warn)}
+.steps{display:flex;gap:2px;padding:3px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line)}
+.step{display:flex;align-items:center;gap:8px;padding:6px 14px 6px 10px;border-radius:9px;border:0;background:none;font-size:13.5px;font-weight:500;color:var(--muted);transition:background .2s,color .2s}
+.step b{font-family:var(--f-mono);font-size:11px;font-weight:500;color:var(--faint)}
+.step:hover:not(:disabled){color:var(--ink)}
+.step[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.06),0 0 0 1px var(--line)}
+.step[aria-selected="true"] b{color:var(--ink)}
+.step:disabled{opacity:.4;cursor:not-allowed}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 16px;border-radius:var(--r-sm);border:1px solid var(--line-2);background:var(--surface);font-weight:500;font-size:14px;white-space:nowrap;transition:background .15s,border-color .15s,transform .1s}
+.btn:hover:not(:disabled){background:var(--surface-2)}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover:not(:disabled){background:var(--accent);opacity:.88}
+.btn.stop{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn.small{height:32px;padding:0 12px;font-size:13px}
+.btn.lg{height:48px;padding:0 22px;font-size:15px;border-radius:13px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn svg{width:16px;height:16px}
+
+/* form fields: one style everywhere */
+.field{display:flex;flex-direction:column;gap:7px;min-width:0}
+.field input,.field select,.field textarea,.rubric input{width:100%;min-width:0;padding:10px 12px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--surface);transition:border-color .15s,box-shadow .15s}
+.field input:hover,.field select:hover,.field textarea:hover,.rubric input:hover{border-color:var(--line-2)}
+.field input:focus,.field select:focus,.field textarea:focus,.rubric input:focus,.composer textarea:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 3px var(--accent-soft)}
+.field textarea{resize:vertical;line-height:1.5}
+.field select{appearance:none;-webkit-appearance:none;padding-right:34px;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238E8E89' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+
+/* setup */
+.setup{display:flex;flex-direction:column;gap:22px}
+.intro{display:flex;flex-direction:column;gap:10px;padding-top:28px;max-width:680px}
+.intro h1{font-size:clamp(34px,5vw,52px);line-height:1.02}
+.intro h1 em{font-style:italic;color:var(--muted)}
+.intro p{color:var(--muted);font-size:15.5px;max-width:56ch}
+.setup-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:18px;align-items:start}
+.card{padding:24px;display:flex;flex-direction:column;gap:18px}
+.card-head{display:flex;align-items:baseline;gap:12px}
+.card-head h2{font-size:26px;line-height:1.1}
+.kicker{font-family:var(--f-mono);font-size:11.5px;color:var(--faint)}
+.personas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.persona{text-align:left;padding:14px;border-radius:14px;border:1px solid var(--line);background:var(--surface);display:flex;flex-direction:column;gap:3px;min-width:0;position:relative;transition:border-color .15s,background .15s,box-shadow .15s}
+.persona:hover{border-color:var(--line-2)}
+.persona .pav{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);font-family:var(--f-display);font-size:18px;font-style:normal;margin-bottom:8px}
+.persona strong{font-weight:600;font-size:14.5px}
+.persona span{font-size:12.5px;color:var(--muted);line-height:1.4}
+.persona em{order:5;align-self:flex-start;margin-top:10px;font-style:normal;font-size:10.5px;font-weight:500;letter-spacing:.04em;color:var(--muted);padding:2px 9px;border-radius:999px;border:1px solid var(--line);max-width:100%}
+.persona[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.persona[aria-pressed="true"] .pav{background:var(--ink);color:var(--bg)}
+details.edit{border-top:1px solid var(--line);padding-top:14px}
+details.edit summary{cursor:pointer;font-weight:500;font-size:13.5px;color:var(--muted);list-style:none;display:flex;align-items:center;gap:6px}
+details.edit summary::-webkit-details-marker{display:none}
+details.edit summary::before{content:"+";font-family:var(--f-mono);width:14px;color:var(--faint)}
+details.edit[open] summary::before{content:"–"}
+details.edit summary:hover{color:var(--ink)}
+details.edit[open] summary{margin-bottom:14px}
+details.edit .inner{display:flex;flex-direction:column;gap:14px}
+.rubric{width:100%;border-collapse:collapse;min-width:440px}
+.rubric td:first-child{width:34%}
+.rubric th{text-align:left;padding:0 4px 8px;font-weight:500}
+.rubric td{padding:3px 4px;vertical-align:top}
+.rubric input{padding:8px 10px;font-size:13.5px}
+.rubric td.w{width:76px} .rubric td.x{width:34px}
+.rubric input.wt{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.iconbtn{width:30px;height:36px;border-radius:8px;border:0;background:none;color:var(--faint);font-size:17px;transition:color .15s,background .15s}
+.iconbtn:hover:not(:disabled){color:var(--bad);background:var(--surface-2)}
+.iconbtn:disabled{opacity:.3;cursor:not-allowed}
+.rubric-foot{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:14px}
+.total{font-family:var(--f-mono);font-size:12.5px;color:var(--muted)}
+.total.bad{color:var(--pen)}
+.startbar{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;padding:18px 18px 18px 24px}
+.startbar strong{font-weight:600;font-size:15px}
+
+/* call */
+.call{display:grid;grid-template-columns:360px minmax(0,1fr);gap:18px;align-items:start;padding-top:24px}
+.side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.stage{padding:22px 22px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
+.stage-top{align-self:stretch;display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.livetag{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.livetag i{width:7px;height:7px;border-radius:50%;background:var(--live);animation:blink 2s ease-in-out infinite}
+@keyframes blink{50%{opacity:.35}}
+.clock{font-family:var(--f-mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.av{width:112px;height:112px;border-radius:50%;flex:none;display:grid;place-items:center;background:var(--surface-2);font-family:var(--f-display);font-size:48px;position:relative;margin-bottom:14px;border:1px solid var(--line)}
+.av::before,.av::after{content:"";position:absolute;inset:-1px;border-radius:50%;border:1px solid var(--ink);opacity:0;pointer-events:none}
+.stage.speaking .av::before{animation:ring 2s cubic-bezier(.2,.6,.3,1) infinite}
+.stage.speaking .av::after{animation:ring 2s cubic-bezier(.2,.6,.3,1) 1s infinite}
+@keyframes ring{0%{opacity:.5;transform:scale(1)}100%{opacity:0;transform:scale(1.45)}}
+.who-id strong{display:block;font-family:var(--f-display);font-size:30px;font-weight:400;line-height:1.1}
+.who-id span{display:block;font-size:13px;color:var(--muted);margin-top:4px;max-width:30ch;margin-inline:auto}
+.callstate{font-size:13px;color:var(--ink);min-height:22px;margin-top:10px;padding:3px 12px;border-radius:999px;background:var(--surface-2)}
+.controls{display:flex;justify-content:center;gap:22px;margin-top:22px}
+.ctl{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:11.5px;color:var(--muted)}
+.ctl:has(> [hidden]){display:none}
+.round{width:56px;height:56px;border-radius:50%;border:1px solid var(--line-2);background:var(--surface);display:grid;place-items:center;transition:background .15s,transform .1s,opacity .15s}
+.round svg{width:22px;height:22px}
+.round:hover:not(:disabled){background:var(--surface-2)}
+.round:active:not(:disabled){transform:scale(.96)}
+.round:disabled{opacity:.35;cursor:not-allowed}
+.round.end{background:var(--bad);border-color:var(--bad);color:#fff}
+.round.end:hover:not(:disabled){background:var(--bad);opacity:.9}
+.mic.on{background:var(--ink);border-color:var(--ink);color:var(--bg);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 7px var(--accent-soft)}}
+.coach{padding:18px 20px;display:flex;flex-direction:column;gap:18px}
+.temp{display:flex;flex-direction:column;gap:10px}
+.tempbar{height:4px;border-radius:2px;background:linear-gradient(90deg,var(--bad),var(--warn),var(--good));position:relative;opacity:.9}
+.tempbar i{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:var(--surface);border:2px solid var(--ink);transform:translate(-50%,-50%);transition:left .8s cubic-bezier(.2,.7,.2,1);left:50%}
+.tempscale{display:flex;justify-content:space-between;font-size:11px;color:var(--faint)}
+.facts{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.facts li{font-size:12.5px;padding:8px 10px 8px 30px;border-radius:9px;position:relative;line-height:1.4}
+.facts li::before{position:absolute;left:10px;top:8px;font-size:11px}
+.facts li.lock{color:var(--faint);border:1px dashed var(--line-2)}
+.facts li.lock::before{content:"○"}
+.facts li.got{background:var(--good-soft);color:var(--ink)}
+.facts li.got::before{content:"✓";color:var(--good);font-weight:600}
+.prefs{display:flex;flex-direction:column;gap:10px;padding:4px 6px}
+.toggle{display:flex;gap:10px;align-items:center;font-size:13px;color:var(--muted);cursor:pointer}
+.toggle input{appearance:none;-webkit-appearance:none;flex:none;width:30px;height:18px;border-radius:999px;background:var(--line-2);position:relative;cursor:pointer;transition:background .2s;margin:0}
+.toggle input::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .2s}
+.toggle input:checked{background:var(--ink)}
+.toggle input:checked::after{transform:translateX(12px);background:var(--bg)}
+.convo{display:flex;flex-direction:column;height:min(680px,calc(100vh - 140px));min-height:460px}
+.convo-head{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:16px 22px;border-bottom:1px solid var(--line)}
+.convo-head h3{font-size:13.5px}
+.lines{flex:1;overflow-y:auto;padding:22px;display:flex;flex-direction:column;gap:14px;scroll-behavior:smooth}
+.ln{display:flex;flex-direction:column;gap:4px;max-width:78%;animation:in .3s cubic-bezier(.2,.7,.2,1)}
+.ln .w{font-size:11px;font-weight:500;color:var(--faint);padding-inline:4px}
+.ln p{padding:10px 15px;border-radius:18px;font-size:14.5px;line-height:1.5}
+.ln.cust{align-self:flex-start} .ln.cust p{background:var(--surface-2);border-bottom-left-radius:6px}
+.ln.rep{align-self:flex-end;text-align:right} .ln.rep p{background:var(--ink);color:var(--bg);border-bottom-right-radius:6px;text-align:left}
+.ln.note{align-self:center;max-width:100%} .ln.note p{background:none;padding:2px 8px;color:var(--muted);font-size:12.5px;text-align:center}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.empty{margin:auto;text-align:center;color:var(--muted);max-width:340px;display:flex;flex-direction:column;gap:6px;font-size:13.5px}
+.empty strong{font-family:var(--f-display);font-weight:400;color:var(--ink);font-size:24px}
+.composer{border-top:1px solid var(--line);padding:12px;display:flex;gap:8px;align-items:flex-end}
+.composer textarea{flex:1;min-width:0;resize:none;padding:11px 14px;border-radius:14px;border:1px solid var(--line);background:var(--surface-2);min-height:44px;max-height:140px;transition:border-color .15s,box-shadow .15s}
+.composer textarea:disabled{opacity:.6}
+.send{width:44px;height:44px;flex:none;border-radius:50%;border:0;background:var(--ink);color:var(--bg);display:grid;place-items:center;transition:opacity .15s}
+.send svg{width:18px;height:18px}
+.send:disabled{opacity:.25;cursor:not-allowed}
+.typing{display:inline-flex;gap:4px;padding:14px 16px;border-radius:18px;border-bottom-left-radius:6px;background:var(--surface-2)}
+.typing i{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:dot 1.2s ease-in-out infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,100%{opacity:.25;transform:none}50%{opacity:1;transform:translateY(-2px)}}
+
+/* review */
+.review{display:flex;flex-direction:column;gap:18px;padding-top:24px}
+.exbanner{padding:12px 12px 12px 18px;border-radius:14px;border:1px dashed var(--line-2);font-size:13.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+.verdict{display:grid;grid-template-columns:auto minmax(0,1fr);gap:32px;padding:32px;align-items:center}
+.big{display:flex;flex-direction:column;align-items:center;justify-content:center;width:148px;height:148px;border-radius:50%;border:3px solid var(--line);flex:none}
+.big b{font-family:var(--f-display);font-size:64px;font-weight:400;line-height:.9;font-variant-numeric:tabular-nums}
+.big span{font-size:10.5px;color:var(--muted);letter-spacing:.09em;text-transform:uppercase;margin-top:6px}
+.verdict h2{font-size:38px;line-height:1.05;margin-bottom:8px}
+.verdict .meta{font-family:var(--f-mono);font-size:12px;color:var(--muted);margin-bottom:12px}
+.verdict p:last-child{font-size:15.5px;max-width:65ch}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.metric{padding:18px 20px;display:flex;flex-direction:column;gap:2px;border:0;border-radius:0;box-shadow:none;border-left:1px solid var(--line)}
+.metric:first-child{border-left:0}
+.metric b{font-family:var(--f-display);font-size:34px;font-weight:400;line-height:1.1;font-variant-numeric:tabular-nums}
+.metric span{font-size:12.5px;color:var(--muted)}
+.metric em{font-style:normal;font-size:12px;font-weight:500;margin-top:6px}
+.cols{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;align-items:start}
+.sec{padding:24px;display:flex;flex-direction:column;gap:18px}
+.sec h3{font-family:var(--f-display);font-size:24px;font-weight:400;letter-spacing:-.01em}
+.param{display:flex;flex-direction:column;gap:8px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.param:last-child{border-bottom:0;padding-bottom:0}
+.phead{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.phead strong{font-size:14.5px;font-weight:600}
+.phead small{font-size:11.5px;color:var(--faint);font-family:var(--f-mono);margin-left:4px}
+.phead b{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:13.5px;font-weight:500}
+.pbar{height:3px;border-radius:2px;background:var(--surface-2);overflow:hidden}
+.pbar i{display:block;height:100%;border-radius:2px}
+.quote{font-family:var(--f-display);font-style:italic;font-size:17px;line-height:1.4;color:var(--muted);border-left:2px solid var(--line-2);padding-left:12px}
+.fb{font-size:14px}
+.moment{display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:14px;background:var(--bg);border:1px solid var(--line)}
+.moment .said{font-size:14px;text-decoration:line-through;text-decoration-color:var(--pen);text-decoration-thickness:1.5px;color:var(--muted)}
+.moment .issue{font-size:13px;color:var(--pen);font-weight:500}
+.moment .better{font-size:14px;padding:10px 12px;border-radius:10px;background:var(--good-soft)}
+.moment .better::before{content:"Try instead";display:block;font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--good);margin-bottom:3px}
+.moment .turn{font-family:var(--f-mono);font-size:11px;color:var(--faint)}
+ul.plain{margin:-8px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+ul.plain li::marker{color:var(--faint)}
+.factlist{list-style:none;padding:0;margin:-8px 0 0;display:flex;flex-direction:column;gap:8px}
+.factlist li{font-size:13.5px;display:flex;gap:10px;align-items:flex-start}
+.factlist li b{flex:none;font-size:10px;font-weight:600;letter-spacing:.08em;padding:2px 8px;border-radius:999px;margin-top:2px}
+.factlist li.got b{background:var(--good-soft);color:var(--good)}
+.factlist li.miss b{background:var(--pen-soft);color:var(--pen)}
+.tscript{display:flex;flex-direction:column;gap:10px;max-height:480px;overflow-y:auto}
+.tl{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;font-size:14px}
+.tl .n{font-family:var(--f-mono);font-size:11px;color:var(--faint);padding-top:3px}
+.tl .t b{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-right:8px;color:var(--muted)}
+.tl.rep .t b{color:var(--ink)}
+.tl.flag .t{background:var(--pen-soft);border-radius:8px;padding:4px 8px;margin:-4px -8px}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.loading{padding:72px 18px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
+.loading strong{font-family:var(--f-display);font-weight:400;font-size:28px}
+.loading .spin{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--ink);animation:sp .9s linear infinite;margin-bottom:8px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+@media (max-width:980px){
+  .setup-grid,.cols{grid-template-columns:minmax(0,1fr)}
+  .call{grid-template-columns:minmax(0,1fr)}
+  .metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .metric:nth-child(3){border-left:0}
+  .metric:nth-child(n+3){border-top:1px solid var(--line)}
+  .convo{height:auto} .lines{min-height:320px;max-height:60vh}
+}
+@media (max-width:640px){
+  .top{justify-content:center}
+  .personas{grid-template-columns:minmax(0,1fr)}
+  .grid2{grid-template-columns:minmax(0,1fr)}
+  .verdict{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center;padding:24px}
+  .verdict p:last-child{margin-inline:auto}
+  .ln{max-width:90%}
+  .rubric td.w{width:60px}
+  .card,.sec{padding:18px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><span class="mark" aria-hidden="true"></span>Practice Room</div>
+    <nav class="steps" role="tablist" aria-label="Steps">
+      <button class="step" role="tab" id="tab-setup" aria-controls="view-setup" aria-selected="true"><b>01</b>Set up</button>
+      <button class="step" role="tab" id="tab-call" aria-controls="view-call" aria-selected="false"><b>02</b>Call</button>
+      <button class="step" role="tab" id="tab-review" aria-controls="view-review" aria-selected="false"><b>03</b>Review</button>
+    </nav>
+    <span class="status" id="status"><i></i><span id="statusText">Connecting…</span></span>
+  </header>
+
+  <!-- 1 SETUP -->
+  <section id="view-setup" role="tabpanel" aria-labelledby="tab-setup" class="setup">
+    <div class="intro">
+      <h1>Practise the call <em>before it counts.</em></h1>
+      <p>Call an AI customer, talk it through out loud, and get a scored review with the exact lines to say differently.</p>
+    </div>
+
+    <div class="setup-grid">
+      <div class="panel card">
+        <div class="card-head"><span class="kicker">01</span><h2>The customer</h2></div>
+        <div class="personas" id="personas"></div>
+        <div class="grid2">
+          <label class="field"><span class="label">Difficulty</span>
+            <select id="difficulty"><option value="easy">Easy: warm and patient</option><option value="medium" selected>Medium: realistic</option><option value="hard">Hard: tough and impatient</option></select></label>
+          <label class="field"><span class="label">Customer speaks</span>
+            <select id="lang"><option value="en">Indian English</option><option value="hi">Hinglish</option></select></label>
+        </div>
+        <label class="field"><span class="label">What you're selling</span><textarea id="product" rows="4"></textarea>
+          <span class="hint">Example product shown. Replace it with yours so the customer reacts to your real offer.</span></label>
+        <details class="edit" id="personaEdit">
+          <summary>Edit this customer</summary>
+          <div class="inner">
+            <div class="grid2">
+              <label class="field"><span class="label">Name</span><input id="pName" maxlength="40"></label>
+              <label class="field"><span class="label">Role and company</span><input id="pRole" maxlength="120"></label>
+            </div>
+            <label class="field"><span class="label">Personality</span><textarea id="pPersonality" rows="2"></textarea></label>
+            <label class="field"><span class="label">Hidden facts, one per line</span><textarea id="pHidden" rows="5"></textarea>
+              <span class="hint">Revealed only when the rep asks a good question.</span></label>
+            <label class="field"><span class="label">Objections, one per line</span><textarea id="pObjections" rows="3"></textarea></label>
+          </div>
+        </details>
+      </div>
+
+      <div class="panel card">
+        <div class="card-head"><span class="kicker">02</span><h2>How it's scored</h2></div>
+        <p class="hint">Placeholder parameters until the official list arrives. Weights should add up to 100.</p>
+        <div style="overflow-x:auto">
+          <table class="rubric">
+            <thead><tr><th class="label">Parameter</th><th class="label">What good looks like</th><th class="label" style="text-align:right">Weight</th><th></th></tr></thead>
+            <tbody id="rubricBody"></tbody>
+          </table>
+        </div>
+        <div class="rubric-foot">
+          <button class="btn small" id="addParam" type="button">Add parameter</button>
+          <span class="total" id="weightTotal"></span>
+          <button class="btn small" id="resetRubric" type="button">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel startbar">
+      <div><strong id="startSummary"></strong><p class="hint">The customer picks up and says hello. Then just talk.</p></div>
+      <button class="btn primary lg" id="startCall">Start practice call</button>
+    </div>
+  </section>
+
+  <!-- 2 CALL -->
+  <section id="view-call" role="tabpanel" aria-labelledby="tab-call" class="call" hidden>
+    <div class="side">
+      <aside class="panel stage" id="whoPanel">
+        <div class="stage-top"><span class="livetag"><i></i>On call</span><span class="clock" id="clock">00:00</span></div>
+        <div class="av" id="cAv">V</div>
+        <div class="who-id"><strong id="cName"></strong><span id="cRole"></span></div>
+        <div class="callstate" id="callState" aria-live="polite">Not connected</div>
+        <div class="controls">
+          <div class="ctl">
+            <button class="round mic" type="button" id="micBtn" title="Mute or unmute your mic" aria-label="Mute or unmute your mic" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+            </button><span>Mic</span>
+          </div>
+          <div class="ctl">
+            <button class="round end" type="button" id="endCall" title="End call and get feedback" aria-label="End call and get feedback" disabled>
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 9.5c-2.6 0-5.1.6-7.3 1.7-.6.3-1 .9-1 1.6v2.4c0 .8.7 1.4 1.5 1.3l3-.4c.6-.1 1.1-.6 1.2-1.2l.3-1.9c1.5-.4 3.1-.4 4.6 0l.3 1.9c.1.6.6 1.1 1.2 1.2l3 .4c.8.1 1.5-.5 1.5-1.3v-2.4c0-.7-.4-1.3-1-1.6-2.2-1.1-4.7-1.7-7.3-1.7Z"/></svg>
+            </button><span>End &amp; review</span>
+          </div>
+          <div class="ctl">
+            <button class="round" type="button" id="restart" title="Restart call" aria-label="Restart call" disabled>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+            </button><span>Restart</span>
+          </div>
+        </div>
+      </aside>
+      <div class="panel coach" id="coachBox">
+        <div class="temp">
+          <span class="label">Customer temperature</span>
+          <div class="tempbar"><i id="tempDot"></i></div>
+          <div class="tempscale"><span>About to hang up</span><span>Ready to buy</span></div>
+        </div>
+        <div>
+          <span class="label" id="factsLabel">Hidden facts uncovered</span>
+          <ul class="facts" id="factsLive"></ul>
+        </div>
+      </div>
+      <div class="prefs">
+        <label class="toggle"><input type="checkbox" id="coachToggle" checked> Coach view</label>
+        <label class="toggle"><input type="checkbox" id="voiceToggle" checked> Customer speaks out loud (basic mode)</label>
+      </div>
+    </div>
+    <div class="panel convo">
+      <div class="convo-head"><h3>Transcript</h3><span class="label" id="turnInfo">0 rep turns</span></div>
+      <div class="lines" id="lines" aria-live="polite">
+        <div class="empty"><strong>No call yet</strong><span>Pick a customer in Set up and press Start practice call.</span></div>
+      </div>
+      <form class="composer" id="composer">
+        <textarea id="say" rows="1" placeholder="Speak, or type your line…" maxlength="500" disabled></textarea>
+        <button class="send" id="sendBtn" title="Send line" aria-label="Send line" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- 3 REVIEW -->
+  <section id="view-review" role="tabpanel" aria-labelledby="tab-review" class="review" hidden></section>
+</div>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const store = {
+  get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+  set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+};
+
+// ---------- defaults ----------
+const DEFAULT_PRODUCT = 'Example: Relay, WhatsApp automation for businesses. Instant auto-replies to common customer questions, broadcast campaigns, and integration with your CRM and order system. Plans from ₹2,999 a month, cancel anytime, 14-day free trial.';
+const PERSONAS = {
+  vikram: { tag:'Skeptical', name:'Vikram Shah', role:'Operations Head, 120-person logistics company, Ahmedabad',
+    personality:'Busy and blunt. Has been burned by vendors who over-promised. Gives short answers until the rep earns his attention, and tries to end the call early with "send me an email".',
+    hidden:['Two support staff spend about half their day answering "where is my parcel" messages on WhatsApp','Customer complaints about slow replies went up during the last festive season','Can spend up to ₹15,000 a month if the return is clear','The CEO signs off on anything above ₹10,000 a month','Their "system" is really one shared WhatsApp Business phone'],
+    objections:['We already have a system for this','Just send me an email','Sounds expensive for what it is'] },
+  ananya: { tag:'Friendly, won’t commit', name:'Ananya Iyer', role:'Marketing Manager, D2C skincare brand, Bengaluru',
+    personality:'Warm, chatty and positive, but avoids committing to anything. Agrees with everything in general terms and dodges specifics like dates and budgets.',
+    hidden:['She is already comparing two competitors','Their big festive sale is in six weeks and she needs something live before it','The founder must approve any new tool','Last campaign: 40% of WhatsApp leads never got a reply'],
+    objections:['Let me think about it and get back to you','We are evaluating a few options','Can you just send me a deck?'] },
+  rohit: { tag:'Tough negotiator', name:'Rohit Malhotra', role:'Procurement Manager, 2,000-employee manufacturer, Pune',
+    personality:'Cold, interrupts, cares about price, contract terms and risk. Tests whether the rep will cave on discounts. Respects reps who hold their ground with facts.',
+    hidden:['Their current vendor contract ends next quarter','He will only approve a paid pilot first, never a long contract up front','IT security review is mandatory for any new vendor','He is measured on cost savings this year'],
+    objections:['Your competitor quoted 30% less','What discount can you give me today?','I don’t want to get locked into a long contract'] }
+};
+const DEFAULT_RUBRIC = [
+  { name:'Opening and rapport', good:'Clear intro, a reason to call that matters to them, permission to continue', weight:15 },
+  { name:'Discovery', good:'Open questions about their situation, pain, budget, timeline and decision-maker before pitching', weight:25 },
+  { name:'Value pitch', good:'Connects the product to the needs the customer shared, not a feature list', weight:20 },
+  { name:'Objection handling', good:'Acknowledges, asks a question to understand, answers with specifics', weight:20 },
+  { name:'Closing', good:'Asks for a clear next step with specific times', weight:15 },
+  { name:'Listening and tone', good:'Builds on what the customer says, confident, not pushy, does not talk over them', weight:5 }
+];
+const DIFF = {
+  easy:'Be patient and fairly open. Give the rep second chances and warm up quickly when they ask decent questions.',
+  medium:'Behave like a realistic busy professional. Warm up only when the rep earns it.',
+  hard:'Be impatient and demanding. Interrupt rambling, push back hard, and end the call if the rep wastes your time twice.'
+};
+
+// ---------- state ----------
+let personas = JSON.parse(JSON.stringify(PERSONAS));
+let pKey = 'vikram';
+let rubric = store.get('pr.rubric') || JSON.parse(JSON.stringify(DEFAULT_RUBRIC));
+let sample = null, ctl = null;
+let call = null; // {turns:[{who,text}], mood, revealed:Set, running, busy, t0}
+let timerId = 0;
+
+// ---------- tabs ----------
+function show(view) {
+  for (const v of ['setup','call','review']) {
+    $('#view-' + v).hidden = v !== view;
+    $('#tab-' + v).setAttribute('aria-selected', String(v === view));
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+['setup','call','review'].forEach(v => $('#tab-' + v).addEventListener('click', () => show(v)));
+
+// ---------- setup: personas ----------
+function renderPersonaCards() {
+  const box = $('#personas'); box.textContent = '';
+  for (const [k, p] of Object.entries(personas)) {
+    const b = el('button', 'persona'); b.type = 'button'; b.setAttribute('aria-pressed', String(k === pKey));
+    b.append(el('i', 'pav', p.name.charAt(0)), el('em', null, p.tag), el('strong', null, p.name), el('span', null, p.role));
+    b.addEventListener('click', () => { pKey = k; renderPersonaCards(); fillPersonaForm(); syncStart(); });
+    box.append(b);
+  }
+}
+function fillPersonaForm() {
+  const p = personas[pKey];
+  $('#pName').value = p.name; $('#pRole').value = p.role; $('#pPersonality').value = p.personality;
+  $('#pHidden').value = p.hidden.join('\n'); $('#pObjections').value = p.objections.join('\n');
+}
+function readPersonaForm() {
+  const p = personas[pKey];
+  p.name = $('#pName').value.trim() || p.name;
+  p.role = $('#pRole').value.trim() || p.role;
+  p.personality = $('#pPersonality').value.trim() || p.personality;
+  const h = $('#pHidden').value.split('\n').map(s => s.trim()).filter(Boolean);
+  if (h.length) p.hidden = h.slice(0, 10);
+  const o = $('#pObjections').value.split('\n').map(s => s.trim()).filter(Boolean);
+  if (o.length) p.objections = o.slice(0, 8);
+}
+['#pName','#pRole','#pPersonality','#pHidden','#pObjections'].forEach(s => $(s).addEventListener('change', () => { readPersonaForm(); renderPersonaCards(); syncStart(); }));
+$('#product').value = DEFAULT_PRODUCT;
+$('#difficulty').addEventListener('change', syncStart);
+
+// ---------- setup: rubric ----------
+function renderRubric() {
+  const tb = $('#rubricBody'); tb.textContent = '';
+  rubric.forEach((r, i) => {
+    const tr = el('tr');
+    const td1 = el('td'); const n = el('input'); n.id = 'rn' + i; n.value = r.name; n.maxLength = 50; n.setAttribute('aria-label', 'Parameter name');
+    n.addEventListener('input', () => { r.name = n.value; saveRubric(); }); td1.append(n);
+    const td2 = el('td'); const g = el('input'); g.id = 'rg' + i; g.value = r.good; g.maxLength = 200; g.setAttribute('aria-label', 'What good looks like');
+    g.addEventListener('input', () => { r.good = g.value; saveRubric(); }); td2.append(g);
+    const td3 = el('td', 'w'); const w = el('input', 'wt'); w.id = 'rw' + i; w.type = 'number'; w.min = 0; w.max = 100; w.value = r.weight; w.setAttribute('aria-label', 'Weight');
+    w.addEventListener('input', () => { r.weight = Math.max(0, Number(w.value) || 0); saveRubric(); renderTotal(); }); td3.append(w);
+    const td4 = el('td', 'x'); const x = el('button', 'iconbtn', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Remove ' + r.name);
+    x.disabled = rubric.length <= 1;
+    x.addEventListener('click', () => { rubric.splice(i, 1); saveRubric(); renderRubric(); }); td4.append(x);
+    tr.append(td1, td2, td3, td4); tb.append(tr);
+  });
+  renderTotal();
+}
+function renderTotal() {
+  const t = rubric.reduce((s, r) => s + (Number(r.weight) || 0), 0);
+  const e = $('#weightTotal'); e.textContent = 'Total weight: ' + t + ' / 100';
+  e.classList.toggle('bad', t !== 100);
+}
+function saveRubric() { store.set('pr.rubric', rubric); }
+$('#addParam').addEventListener('click', () => { if (rubric.length >= 12) return; rubric.push({ name:'New parameter', good:'', weight:0 }); saveRubric(); renderRubric(); $('#rn' + (rubric.length - 1)).select(); });
+$('#resetRubric').addEventListener('click', () => { rubric = JSON.parse(JSON.stringify(DEFAULT_RUBRIC)); saveRubric(); renderRubric(); });
+function cleanRubric() { return rubric.filter(r => r.name.trim()).map(r => ({ name: r.name.trim(), good: r.good.trim(), weight: Number(r.weight) || 0 })); }
+
+function syncStart() {
+  const p = personas[pKey];
+  $('#startSummary').textContent = 'Calling ' + p.name + ' · ' + $('#difficulty').selectedOptions[0].text.split(':')[0] + ' difficulty';
+}
+
+// ---------- voice ----------
+let voices = [];
+const loadVoices = () => { try { voices = speechSynthesis.getVoices() || []; } catch { voices = []; } };
+if ('speechSynthesis' in window) { loadVoices(); try { speechSynthesis.onvoiceschanged = loadVoices; } catch {} }
+const FEMALE_NAMES = ['ananya'];
+function pickVoice() {
+  const en = voices.filter(v => /^en/i.test(v.lang));
+  const pool = en.filter(v => /IN/i.test(v.lang)).concat(en.filter(v => !/IN/i.test(v.lang)));
+  if (!pool.length) return null;
+  const fem = /female|veena|raveena|heera|aditi|priya|neerja|kajal|swara|samantha|zira|karen|moira|tessa|kalpana/i;
+  const male = /(^|[^e])male|rishi|ravi|hemant|prabhat|madhur|daniel|alex|david|fred|aaron|arthur/i;
+  const wantF = FEMALE_NAMES.includes(pKey);
+  return (wantF ? pool.find(v => fem.test(v.name)) : pool.find(v => male.test(v.name) && !fem.test(v.name))) || pool[0];
+}
+function speak(text) {
+  const panel = $('#whoPanel');
+  if (!$('#voiceToggle').checked || !('speechSynthesis' in window)) return Promise.resolve();
+  return new Promise(res => {
+    let done = false, tm = 0;
+    const fin = () => { if (done) return; done = true; clearTimeout(tm); panel.classList.remove('speaking'); res(); };
+    tm = setTimeout(fin, 3000 + text.split(/\s+/).length * 650);
+    try {
+      const u = new SpeechSynthesisUtterance(text.replace(/₹\s?/g, 'rupees '));
+      const v = pickVoice(); if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-IN';
+      u.rate = 1.02; u.onstart = () => panel.classList.add('speaking'); u.onend = fin; u.onerror = fin;
+      speechSynthesis.cancel(); speechSynthesis.speak(u);
+    } catch { fin(); }
+  });
+}
+$('#voiceToggle').addEventListener('change', e => { if (!e.target.checked) try { speechSynthesis.cancel(); } catch {} });
+
+// ---------- hands-free mic: listens, sends after a pause, pauses while the customer talks ----------
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const PAUSE_MS = 1400;           // silence that ends the rep's turn
+let rec = null, recOn = false, wantListen = false, finalText = '', pauseTimer = 0, micBlocked = false;
+if (SR) $('#micBtn').hidden = false;
+function startListening() {
+  if (!SR || micBlocked || !call?.running || call.busy) return;
+  wantListen = true;
+  if (recOn) return;
+  finalText = '';
+  try {
+    rec = new SR(); rec.lang = $('#lang').value === 'hi' ? 'hi-IN' : 'en-IN'; rec.interimResults = true; rec.continuous = true;
+    rec.onresult = e => {
+      let interim = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) finalText += e.results[i][0].transcript + ' ';
+        else interim += e.results[i][0].transcript;
+      }
+      $('#say').value = (finalText + interim).trim();
+      clearTimeout(pauseTimer);
+      pauseTimer = setTimeout(() => { const t = (finalText + interim).trim(); if (t) { stopListening(); sendRep(t); } }, PAUSE_MS);
+    };
+    rec.onerror = e => {
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'audio-capture') {
+        micBlocked = true; wantListen = false;
+        addLine('note', 'Chrome could not use the microphone. Allow mic access for this page (lock icon in the address bar), then press the mic button. You can type meanwhile.');
+      }
+    };
+    rec.onend = () => {
+      recOn = false; $('#micBtn').classList.remove('on');
+      if (wantListen && call?.running && !call.busy) setTimeout(startListening, 150); // Chrome stops after long silence; keep going
+      else if (call?.running && !call.busy) $('#callState').textContent = 'Your turn (mic paused)';
+    };
+    rec.start(); recOn = true; $('#micBtn').classList.add('on');
+    $('#callState').textContent = 'Listening… speak now';
+  } catch { recOn = false; }
+}
+function stopListening() {
+  wantListen = false; clearTimeout(pauseTimer);
+  if (rec && recOn) try { rec.stop(); } catch {}
+}
+$('#micBtn').addEventListener('click', () => {
+  if (lv) {   // live call: the mic is always open; the button only mutes it
+    lv.muted = !lv.muted;
+    if (lv.muted) lv.send?.({ realtimeInput: { audioStreamEnd: true } });
+    $('#micBtn').classList.toggle('on', !lv.muted);
+    $('#callState').textContent = lv.muted ? 'Mic muted, tap the mic to talk' : 'Live: just talk';
+    return;
+  }
+  if (!SR || !call?.running) return;
+  if (call.busy) { try { speechSynthesis.cancel(); } catch {} return; } // tap while the customer talks: cut them off
+  micBlocked = false;
+  if (recOn || wantListen) { stopListening(); $('#callState').textContent = 'Mic paused, tap to talk'; }
+  else startListening();
+});
+
+// ---------- live voice call: audio streams both ways with Gemini Live, like a real phone call ----------
+// No push-to-talk and no "send": the model hears the rep directly, answers in its own voice,
+// and stops talking when the rep cuts in. Transcripts come back from the model for the review.
+let live = false;   // the server has a Gemini key, so live calls are available
+let lv = null;      // the open live session
+const LIVE_VOICES = { vikram: 'Charon', ananya: 'Kore', rohit: 'Fenrir' };
+const MIC_WORKLET = 'registerProcessor("mic",class extends AudioWorkletProcessor{process(i){const c=i[0]&&i[0][0];if(c)this.port.postMessage(c.slice(0));return true}})';
+const toB64 = u8 => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
+const fromB64 = b => { const s = atob(b), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u; };
+
+function liveInstruction() {
+  const per = p();
+  return `You are role-playing a CUSTOMER on a live phone call so that a human sales rep can practise. Stay fully in character. Never coach the rep, never break character, never mention being an AI.
+
+You are ${per.name}, ${per.role}.
+Personality: ${per.personality}
+Difficulty: ${DIFF[$('#difficulty').value]}
+The rep is selling: ${$('#product').value.trim() || DEFAULT_PRODUCT}
+
+Hidden facts about you. They are true, but NEVER volunteer them. Reveal one only when the rep asks a good, specific question that earns it, and reveal it naturally in your own words:
+${per.hidden.map((h, i) => (i + 1) + '. ' + h).join('\n')}
+
+Objections to raise naturally when they fit:
+${per.objections.map(o => '- ' + o).join('\n')}
+
+How to behave:
+- This is a real phone call. Talk like a real person: short spoken lines, usually one or two sentences, with natural reactions like "hmm", "okay", "${$('#lang').value === 'hi' ? 'haan, achha' : 'right'}". ${$('#lang').value === 'hi' ? 'Speak natural Hinglish, mixing Hindi and English the way Indian professionals do.' : 'Speak natural Indian English with an Indian accent.'}
+- If the rep starts talking while you are speaking, stop and listen.
+- React to the rep. If they pitch before asking about you, ramble, make vague claims, or push after you said no, get colder and shorter. If they listen, ask sharp questions and connect to your needs, warm up.
+- Agree to a next step only if the rep has earned it and asks for it clearly.
+- If your mood drops below 15, or the rep keeps pushing after two refusals, say a polite goodbye and end the call.
+
+Silent tracking: after EVERY reply, call the report_state tool. mood is 0 = about to hang up, 100 = ready to buy; your mood at the start of the call is ${Math.round(call.mood)}. revealed lists the numbers of hidden facts your reply revealed. hang_up is true only when you have just said goodbye. Never say anything about the tool, your mood or the facts out loud.
+
+The phone is ringing. When it connects, answer the way you normally would, in one short line.`;
+}
+
+async function startLiveCall(myCall) {
+  const s = lv = { ws: null, mic: null, micCtx: null, outCtx: null, nextT: 0, playing: new Set(), muted: false,
+    ready: false, rep: null, cust: null, next: null, turnDone: true, hangUp: false, buf: [], bufLen: 0 };
+  const first = p().name.split(' ')[0];
+  const gone = () => lv !== s || call !== myCall || !call.running;
+  try { s.outCtx = new AudioContext({ sampleRate: 24000 }); } catch { s.outCtx = new AudioContext(); }
+  try { s.micCtx = new AudioContext({ sampleRate: 16000 }); } catch { s.micCtx = new AudioContext(); }
+  $('#callState').textContent = 'Connecting…';
+
+  try {
+    s.mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 } });
+  } catch {
+    addLine('note', 'Chrome could not use the microphone. Allow mic access for this page (lock icon in the address bar), then press Restart call. You can type meanwhile.');
+  }
+  if (gone()) return;
+
+  let tok;
+  try { tok = await (await fetch('/api/live-token', { method: 'POST' })).json(); } catch (e) { tok = { error: String(e) }; }
+  if (gone()) return;
+  if (!tok?.token) {
+    addLine('note', 'Could not open a live voice line (' + (tok?.error || 'unknown error') + '). Switching to the basic voice mode for this call.');
+    stopLive(); call.busy = false; setCallUi(); $('#callState').textContent = 'Your turn'; startListening(); return;
+  }
+
+  const ws = s.ws = new WebSocket('wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained?access_token=' + encodeURIComponent(tok.token));
+  ws.binaryType = 'arraybuffer';
+  const sendJson = o => { if (ws.readyState === 1) ws.send(JSON.stringify(o)); };
+  s.send = sendJson;
+  ws.onopen = () => sendJson({ setup: {
+    model: 'models/' + tok.model,
+    generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: LIVE_VOICES[pKey] || (FEMALE_NAMES.includes(pKey) ? 'Kore' : 'Charon') } } } },
+    systemInstruction: { parts: [{ text: liveInstruction() }] },
+    tools: [{ functionDeclarations: [{ name: 'report_state', behavior: 'NON_BLOCKING',
+      description: 'Silently report your state after every reply. Never mention it.',
+      parameters: { type: 'OBJECT', properties: {
+        mood: { type: 'INTEGER', description: '0 = about to hang up, 100 = ready to buy' },
+        revealed: { type: 'ARRAY', items: { type: 'INTEGER' }, description: 'numbers of hidden facts your last reply revealed' },
+        hang_up: { type: 'BOOLEAN', description: 'true only if you just said goodbye' } }, required: ['mood'] } }] }],
+    inputAudioTranscription: {}, outputAudioTranscription: {},
+    contextWindowCompression: { slidingWindow: {} }
+  } });
+
+  ws.onmessage = ev => {
+    if (lv !== s) return;
+    let m; try { m = JSON.parse(typeof ev.data === 'string' ? ev.data : new TextDecoder().decode(ev.data)); } catch { return; }
+    if (m.setupComplete) {
+      s.ready = true; s.turnDone = false;
+      $('#callState').textContent = 'Ringing…';
+      sendJson({ realtimeInput: { text: '[The phone rings and you pick up.]' } });
+    }
+    const sc = m.serverContent;
+    if (sc) {
+      if (sc.inputTranscription?.text) {
+        // Words spoken while the customer is still talking belong to a new line after theirs.
+        if (s.cust && s.playing.size) liveAppend(s, 'next', sc.inputTranscription.text);
+        else liveAppend(s, 'rep', sc.inputTranscription.text);
+      }
+      for (const part of sc.modelTurn?.parts || []) if (part.inlineData?.data) { s.turnDone = false; livePlay(s, part.inlineData, first); }
+      if (sc.outputTranscription?.text) { s.turnDone = false; liveAppend(s, 'cust', sc.outputTranscription.text); }
+      if (sc.interrupted) { liveStopAudio(s); liveCommit(s, true); }
+      if (sc.turnComplete) { s.turnDone = true; liveCommit(s, false); liveIdle(s, first); }
+    }
+    if (m.toolCall) {
+      for (const fc of m.toolCall.functionCalls || []) {
+        if (fc.name !== 'report_state') continue;
+        const a = fc.args || {};
+        if (Number.isFinite(Number(a.mood))) call.mood = Math.max(0, Math.min(100, Number(a.mood)));
+        (Array.isArray(a.revealed) ? a.revealed : []).forEach(n => { n = Number(n); if (n >= 1 && n <= p().hidden.length) call.revealed.add(n); });
+        if (a.hang_up === true || a.hang_up === 'true') s.hangUp = true;
+      }
+      renderLive();
+      sendJson({ toolResponse: { functionResponses: (m.toolCall.functionCalls || []).map(fc => ({ id: fc.id, name: fc.name, response: { ok: true }, scheduling: 'SILENT' })) } });
+      liveIdle(s, first);
+    }
+  };
+  ws.onclose = e => {
+    if (lv !== s) return;
+    liveCommit(s, false);
+    const why = e.reason ? ' (' + e.reason + ')' : '';
+    stopLive();
+    if (call === myCall && call.running) {
+      addLine('note', 'The live line dropped' + why + '. You can keep going in basic voice mode, end the call for your review, or restart.');
+      call.busy = false; setCallUi(); $('#callState').textContent = 'Your turn'; startListening();
+    }
+  };
+
+  // Mic: 16 kHz mono PCM in ~100 ms chunks. Gemini's voice activity detection decides when the rep is done.
+  if (s.mic) {
+    try {
+      const url = URL.createObjectURL(new Blob([MIC_WORKLET], { type: 'application/javascript' }));
+      await s.micCtx.audioWorklet.addModule(url); URL.revokeObjectURL(url);
+      if (lv !== s) return;
+      const src = s.micCtx.createMediaStreamSource(s.mic);
+      const node = new AudioWorkletNode(s.micCtx, 'mic');
+      const mute = s.micCtx.createGain(); mute.gain.value = 0;
+      src.connect(node); node.connect(mute); mute.connect(s.micCtx.destination);
+      const rate = s.micCtx.sampleRate, chunk = Math.round(rate / 10);
+      node.port.onmessage = e => {
+        if (!s.ready || s.muted) return;
+        s.buf.push(e.data); s.bufLen += e.data.length;
+        if (s.bufLen < chunk) return;
+        const pcm = new Int16Array(s.bufLen); let o = 0;
+        for (const f of s.buf) for (let i = 0; i < f.length; i++) pcm[o++] = Math.max(-1, Math.min(1, f[i])) * 0x7fff;
+        s.buf = []; s.bufLen = 0;
+        sendJson({ realtimeInput: { audio: { data: toB64(new Uint8Array(pcm.buffer)), mimeType: 'audio/pcm;rate=' + rate } } });
+      };
+      $('#micBtn').classList.add('on');
+    } catch (e) {
+      addLine('note', 'The microphone could not be connected (' + (e?.message || e) + '). You can type your lines.');
+    }
+  }
+}
+
+function liveAppend(s, slot, text) {
+  if (!s[slot]) { addLine(slot === 'cust' ? 'cust' : 'rep', ''); const d = $('#lines').lastElementChild; s[slot] = { el: d, p: d.querySelector('p'), text: '' }; }
+  s[slot].text += text; s[slot].p.textContent = s[slot].text.trim();
+  const lines = $('#lines'); lines.scrollTop = lines.scrollHeight;
+}
+function liveCommit(s, interrupted) {
+  if (!call) return;
+  const take = (slot, who, suffix) => {
+    const o = s[slot]; if (!o) return; s[slot] = null;
+    const t = o.text.trim();
+    if (t) { call.turns.push({ who, text: t + suffix }); if (suffix) o.p.textContent = t + suffix; } else o.el.remove();
+  };
+  take('rep', 'rep', ''); take('cust', 'cust', interrupted ? ' —' : '');
+  if (s.next) { s.rep = s.next; s.next = null; }   // the rep's cut-in becomes their current line
+  renderLive();
+}
+function livePlay(s, data, first) {
+  const rate = Number((data.mimeType || '').match(/rate=(\d+)/)?.[1]) || 24000;
+  const u8 = fromB64(data.data), n = u8.length >> 1, dv = new DataView(u8.buffer);
+  const buf = s.outCtx.createBuffer(1, n, rate), ch = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) ch[i] = dv.getInt16(i * 2, true) / 32768;
+  const src = s.outCtx.createBufferSource(); src.buffer = buf; src.connect(s.outCtx.destination);
+  const t = Math.max(s.outCtx.currentTime + 0.03, s.nextT); src.start(t); s.nextT = t + buf.duration;
+  s.playing.add(src);
+  $('#whoPanel').classList.add('speaking'); $('#callState').textContent = first + ' is speaking';
+  src.onended = () => { s.playing.delete(src); if (!s.playing.size) liveIdle(s, first); };
+}
+function liveStopAudio(s) {
+  for (const src of s.playing) try { src.onended = null; src.stop(); } catch {}
+  s.playing.clear(); s.nextT = 0; $('#whoPanel').classList.remove('speaking');
+}
+// Called whenever the customer may have finished: hang up if they said goodbye, otherwise hand the floor to the rep.
+function liveIdle(s, first) {
+  if (lv !== s || s.playing.size || !s.turnDone || !call?.running) return;
+  $('#whoPanel').classList.remove('speaking');
+  if (s.hangUp) { addLine('note', first + ' ended the call.'); endCall(); return; }
+  $('#callState').textContent = s.muted ? 'Mic muted, tap the mic to talk' : 'Live: just talk';
+}
+function stopLive() {
+  const s = lv; if (!s) return; lv = null;
+  liveCommit(s, false);
+  try { s.ws?.close(); } catch {}
+  try { s.mic?.getTracks().forEach(t => t.stop()); } catch {}
+  try { s.micCtx?.close(); } catch {}
+  try { s.outCtx?.close(); } catch {}
+  $('#micBtn').classList.remove('on'); $('#whoPanel').classList.remove('speaking');
+}
+
+// ---------- call ----------
+const p = () => personas[pKey];
+function addLine(who, text) {
+  const lines = $('#lines'); lines.querySelector('.empty')?.remove(); lines.querySelector('.typing-row')?.remove();
+  const d = el('div', 'ln ' + who);
+  if (who !== 'note') d.append(el('span', 'w', who === 'rep' ? 'You (rep)' : p().name));
+  d.append(el('p', null, text)); lines.append(d); lines.scrollTop = lines.scrollHeight;
+}
+function showTyping(on) {
+  const lines = $('#lines'); lines.querySelector('.typing-row')?.remove();
+  if (!on) return;
+  const d = el('div', 'ln cust typing-row'); const t = el('span', 'typing'); t.append(el('i'), el('i'), el('i')); d.append(t);
+  lines.append(d); lines.scrollTop = lines.scrollHeight;
+}
+function renderLive() {
+  if (!call) return;
+  $('#tempDot').style.left = Math.max(3, Math.min(97, call.mood)) + '%';
+  const ul = $('#factsLive'); ul.textContent = '';
+  p().hidden.forEach((f, i) => {
+    const got = call.revealed.has(i + 1);
+    const li = el('li', got ? 'got' : 'lock', got ? f : 'Locked fact ' + (i + 1));
+    ul.append(li);
+  });
+  $('#factsLabel').textContent = 'Hidden facts uncovered · ' + call.revealed.size + ' of ' + p().hidden.length;
+  const n = call.turns.filter(t => t.who === 'rep').length;
+  $('#turnInfo').textContent = n + (n === 1 ? ' rep turn' : ' rep turns');
+}
+function setCallUi() {
+  const running = !!call?.running, busy = !!call?.busy;
+  $('#endCall').disabled = !running || busy && call.turns.length < 2;
+  $('#restart').disabled = !call;
+  $('#say').disabled = !running || busy;
+  $('#sendBtn').disabled = !running || busy;
+  $('#micBtn').disabled = !running;
+  $('.livetag').hidden = !running;
+  $('#tab-call').disabled = false;
+}
+$('#coachToggle').addEventListener('change', e => { $('#coachBox').hidden = !e.target.checked; });
+
+function startCall() {
+  readPersonaForm();
+  if (!sample) { show('review'); return; }
+  try { ctl?.abort(); speechSynthesis.cancel(); } catch {}
+  stopLive(); stopListening();
+  const per = p();
+  call = { turns: [], mood: { easy: 60, medium: 45, hard: 30 }[$('#difficulty').value], revealed: new Set(), running: true, busy: false };
+  $('#cAv').textContent = per.name.charAt(0); $('#cName').textContent = per.name; $('#cRole').textContent = per.role;
+  $('#lines').textContent = '';
+  show('call');
+  clearInterval(timerId); const t0 = Date.now();
+  const tick = () => { const s = Math.floor((Date.now() - t0) / 1000); $('#clock').textContent = String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
+  tick(); timerId = setInterval(tick, 500);
+  $('#callState').textContent = 'Ringing…';
+  renderLive(); setCallUi();
+  const myCall = call;
+  if (live) { startLiveCall(myCall); return; }
+  call.busy = true; setCallUi();
+  wait(1100).then(async () => {
+    if (call !== myCall || !call.running) return;
+    const first = per.name.split(' ')[0];
+    const hello = $('#lang').value === 'hi' ? 'Haan, hello? ' + first + ' bol raha hoon.' : 'Hello, ' + first + ' speaking.';
+    const hi = pKey === 'ananya' && $('#lang').value === 'hi' ? 'Hello? ' + first + ' bol rahi hoon.' : hello;
+    call.turns.push({ who: 'cust', text: hi }); addLine('cust', hi);
+    $('#callState').textContent = 'Connected';
+    await speak(hi);
+    if (call !== myCall) return;
+    call.busy = false; setCallUi(); $('#callState').textContent = 'Your turn'; $('#say').focus(); startListening();
+  });
+}
+$('#startCall').addEventListener('click', startCall);
+$('#restart').addEventListener('click', startCall);
+
+function transcript(numbered) {
+  return call.turns.map((t, i) => (numbered ? '[' + i + '] ' : '') + (t.who === 'rep' ? 'REP' : 'CUSTOMER') + ': ' + t.text).join('\n');
+}
+function customerPrompt() {
+  const per = p();
+  return `You are role-playing a CUSTOMER on a sales call so that a human sales rep can practise. Stay fully in character. Never coach the rep, never break character, never mention being an AI.
+
+You are ${per.name}, ${per.role}.
+Personality: ${per.personality}
+Difficulty: ${DIFF[$('#difficulty').value]}
+The rep is selling: ${$('#product').value.trim() || DEFAULT_PRODUCT}
+
+Hidden facts about you. They are true, but NEVER volunteer them. Reveal one only when the rep asks a good, specific question that earns it, and reveal it naturally in your own words:
+${per.hidden.map((h, i) => (i + 1) + '. ' + h).join('\n')}
+
+Objections to raise naturally when they fit:
+${per.objections.map(o => '- ' + o).join('\n')}
+
+How to behave:
+- Talk like a real person on the phone: 1 or 2 short sentences, under 35 words. ${$('#lang').value === 'hi' ? 'Speak natural Hinglish (Hindi in Roman script mixed with English). Never use Devanagari.' : 'Speak natural Indian English.'}
+- React to the rep. If they pitch before asking about you, ramble, make vague claims, or push after you said no, get colder and shorter. If they listen, ask sharp questions and connect to your needs, warm up.
+- Agree to a next step only if the rep has earned it and asks for it clearly.
+- If your mood drops below 15, or the rep keeps pushing after two refusals, end the call politely.
+- Mood scale: 0 = about to hang up, 100 = ready to buy. Your mood before this line: ${Math.round(call.mood)}.
+
+Call so far:
+${transcript(false)}
+
+Reply with ONLY a JSON object:
+{"say": "your next line", "mood": integer 0-100 after hearing the rep's last line, "revealed": [numbers of hidden facts your line reveals, or empty], "hang_up": true only if you are ending the call now}`;
+}
+async function sendRep(text) {
+  text = text.trim();
+  if (lv) {   // live call: a typed line goes into the same conversation
+    if (!text || !call?.running || !lv.ready) return;
+    $('#say').value = '';
+    liveCommit(lv, false);
+    call.turns.push({ who: 'rep', text }); addLine('rep', text); renderLive();
+    lv.send({ realtimeInput: { text } });
+    return;
+  }
+  if (!text || !call?.running || call.busy) return;
+  stopListening();
+  $('#say').value = '';
+  call.turns.push({ who: 'rep', text }); addLine('rep', text); renderLive();
+  call.busy = true; setCallUi(); showTyping(true); $('#callState').textContent = p().name.split(' ')[0] + ' is responding…';
+  const myCall = call;
+  try {
+    ctl = new AbortController();
+    const d = await sample.json(customerPrompt(), { modelTier: 'quick', cache: false, signal: ctl.signal });
+    if (call !== myCall || !call.running) return;
+    showTyping(false);
+    const say = String(d?.say || '').trim() || 'Sorry, can you repeat that?';
+    if (Number.isFinite(Number(d?.mood))) call.mood = Math.max(0, Math.min(100, Number(d.mood)));
+    (Array.isArray(d?.revealed) ? d.revealed : []).forEach(n => { n = Number(n); if (n >= 1 && n <= p().hidden.length) call.revealed.add(n); });
+    call.turns.push({ who: 'cust', text: say }); addLine('cust', say); renderLive();
+    $('#callState').textContent = p().name.split(' ')[0] + ' is speaking';
+    await speak(say);
+    if (call !== myCall) return;
+    if (d?.hang_up) { addLine('note', p().name.split(' ')[0] + ' ended the call.'); return endCall(); }
+    call.busy = false; setCallUi(); $('#callState').textContent = 'Your turn'; $('#say').focus(); startListening();
+  } catch (e) {
+    if (call !== myCall) return;
+    showTyping(false);
+    if (e?.code === 'cancelled') return;
+    call.busy = false; setCallUi();
+    if (['not_granted','sampling_disabled','not_declared','capability_disabled','capability_removed'].includes(e?.code)) {
+      sample = null; updateStatus(); call.running = false; setCallUi(); clearInterval(timerId);
+      addLine('note', 'Live AI isn’t available in this view, so the call can’t continue. The Review tab shows an example.'); return;
+    }
+    addLine('note', e?.code === 'rate_limited' ? 'Too many requests in a short time. Wait a minute, then say your line again.' : 'The customer’s reply didn’t come through. Say your line again.');
+    call.turns.pop(); renderLive(); $('#callState').textContent = 'Your turn'; startListening();
+  }
+}
+$('#composer').addEventListener('submit', e => { e.preventDefault(); sendRep($('#say').value); });
+$('#say').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendRep($('#say').value); } });
+$('#say').addEventListener('input', e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(140, e.target.scrollHeight) + 'px'; });
+
+async function endCall() {
+  if (!call) return;
+  stopLive();
+  try { ctl?.abort(); speechSynthesis.cancel(); } catch {}
+  stopListening();
+  call.running = false; call.busy = false; clearInterval(timerId); showTyping(false); setCallUi();
+  $('#callState').textContent = 'Call ended';
+  const repTurns = call.turns.filter(t => t.who === 'rep').length;
+  if (repTurns < 2) { addLine('note', 'The call was too short to review. Restart and say at least two lines.'); return; }
+  const snapshot = { persona: JSON.parse(JSON.stringify(p())), personaKey: pKey, difficulty: $('#difficulty').value, product: $('#product').value.trim(),
+    rubric: cleanRubric(), turns: call.turns.slice(), revealed: [...call.revealed], mood: call.mood, duration: $('#clock').textContent };
+  renderLoading(); show('review');
+  try {
+    const ev = await sample.json(evalPrompt(snapshot), { modelTier: 'default', cache: false });
+    renderReview(snapshot, normalise(ev, snapshot), false);
+  } catch (e) {
+    const v = $('#view-review'); v.textContent = '';
+    const box = el('div', 'panel loading');
+    box.append(el('strong', null, 'The review couldn’t be written'), el('p', 'hint', e?.code === 'rate_limited' ? 'Too many requests. Wait a minute and try again.' : 'The scoring request failed. Your call is kept, so you can try again.'));
+    const b = el('button', 'btn primary', 'Try the review again'); b.addEventListener('click', async () => {
+      renderLoading();
+      try { renderReview(snapshot, normalise(await sample.json(evalPrompt(snapshot), { modelTier: 'default', cache: false }), snapshot), false); }
+      catch { v.textContent = ''; v.append(box); }
+    });
+    box.append(b); v.append(box);
+  }
+}
+$('#endCall').addEventListener('click', endCall);
+
+function evalPrompt(s) {
+  const facts = s.persona.hidden.map((h, i) => (i + 1) + '. ' + h + (s.revealed.includes(i + 1) ? ' (UNCOVERED)' : ' (missed)')).join('\n');
+  const tx = s.turns.map((t, i) => '[' + i + '] ' + (t.who === 'rep' ? 'REP' : 'CUSTOMER') + ': ' + t.text).join('\n');
+  return `You are a demanding but fair sales coach reviewing a practice call. A human sales rep called an AI customer.
+
+Product the rep sells: ${s.product || DEFAULT_PRODUCT}
+Customer: ${s.persona.name}, ${s.persona.role}. Personality: ${s.persona.personality}
+Customer's hidden facts (a strong rep uncovers these through discovery):
+${facts}
+Objections the customer was set up to raise: ${s.persona.objections.join('; ')}
+
+Score the REP on each parameter below, 0 to 10. Use exactly these parameter names, in this order:
+${s.rubric.map(r => '- ' + r.name + (r.good ? ': ' + r.good : '')).join('\n')}
+
+Transcript (turn numbers in brackets):
+${tx}
+
+Rules:
+- Judge only what the rep actually said. A parameter the rep never attempted scores 0 to 2.
+- "evidence" must be an exact quote of the rep's words that best shows the score, or "Not attempted".
+- "feedback" is one or two specific sentences: what happened and why it helped or hurt.
+- "moments": the 2 to 4 rep lines that most needed improving. Give the turn number, the exact words said, the problem, and a better line the rep could have said, written as natural spoken words.
+- Be specific to this call. No generic advice.
+
+Reply with ONLY a JSON object:
+{"summary": "2 sentences on how the call went overall",
+ "scores": [{"parameter": "...", "score": 0-10, "evidence": "...", "feedback": "..."}],
+ "moments": [{"turn": n, "said": "...", "issue": "...", "better": "..."}],
+ "strengths": ["...", "..."],
+ "next_focus": ["...", "...", "..."]}`;
+}
+function normalise(ev, s) {
+  const scores = s.rubric.map(r => {
+    const m = (Array.isArray(ev?.scores) ? ev.scores : []).find(x => String(x?.parameter || '').trim().toLowerCase() === r.name.toLowerCase());
+    const sc = Math.max(0, Math.min(10, Number(m?.score)));
+    return { parameter: r.name, weight: r.weight, score: Number.isFinite(sc) ? sc : 0, evidence: String(m?.evidence || 'Not attempted'), feedback: String(m?.feedback || 'No feedback returned for this parameter.') };
+  });
+  return {
+    summary: String(ev?.summary || ''),
+    scores,
+    moments: (Array.isArray(ev?.moments) ? ev.moments : []).slice(0, 4).map(m => ({ turn: Number(m?.turn), said: String(m?.said || ''), issue: String(m?.issue || ''), better: String(m?.better || '') })).filter(m => m.better),
+    strengths: (Array.isArray(ev?.strengths) ? ev.strengths : []).map(String).slice(0, 3),
+    next_focus: (Array.isArray(ev?.next_focus) ? ev.next_focus : []).map(String).slice(0, 4)
+  };
+}
+
+// ---------- review ----------
+function renderLoading() {
+  const v = $('#view-review'); v.textContent = '';
+  const box = el('div', 'panel loading'); box.append(el('div', 'spin'), el('strong', null, 'Reviewing the call…'), el('p', 'hint', 'The coach is scoring each parameter and picking the lines to redo. This takes up to a minute.'));
+  v.append(box);
+}
+function metrics(s) {
+  const words = t => t.trim().split(/\s+/).filter(Boolean).length;
+  const rep = s.turns.filter(t => t.who === 'rep'), cust = s.turns.filter(t => t.who === 'cust');
+  const rw = rep.reduce((a, t) => a + words(t.text), 0), cw = cust.reduce((a, t) => a + words(t.text), 0);
+  const share = rw + cw ? Math.round(rw / (rw + cw) * 100) : 0;
+  const qs = rep.reduce((a, t) => a + (t.text.match(/\?/g) || []).length, 0);
+  const longest = rep.reduce((a, t) => Math.max(a, words(t.text)), 0);
+  return { share, qs, longest, facts: s.revealed.length, total: s.persona.hidden.length };
+}
+const colorFor = x => x >= 7 ? 'var(--good)' : x >= 4 ? 'var(--warn)' : 'var(--bad)';
+function renderReview(s, ev, isExample) {
+  const v = $('#view-review'); v.textContent = '';
+  const totalW = ev.scores.reduce((a, x) => a + x.weight, 0) || 1;
+  const overall = Math.round(ev.scores.reduce((a, x) => a + x.score / 10 * x.weight, 0) / totalW * 100);
+  const m = metrics(s);
+
+  if (isExample) {
+    const b = el('div', 'exbanner');
+    b.append(el('span', null, 'Example review of a practice call. Run your own call to get a review like this.'));
+    const go = el('button', 'btn small primary', 'Set up a call'); go.addEventListener('click', () => show('setup')); b.append(go);
+    v.append(b);
+  }
+
+  // verdict
+  const vd = el('div', 'panel verdict');
+  const big = el('div', 'big'); big.style.borderColor = colorFor(overall / 10);
+  big.append(el('b', null, String(overall)), el('span', null, 'out of 100'));
+  const right = el('div');
+  right.append(el('h2', null, overall >= 75 ? 'Strong call' : overall >= 50 ? 'Decent call, clear gaps' : 'Needs work'));
+  right.append(el('p', 'meta', s.persona.name + ' · ' + s.difficulty.charAt(0).toUpperCase() + s.difficulty.slice(1) + ' difficulty · ' + s.duration + ' · ' + s.turns.filter(t => t.who === 'rep').length + ' rep turns'));
+  right.append(el('p', null, ev.summary));
+  vd.append(big, right); v.append(vd);
+
+  // metrics
+  const ms = el('div', 'metrics');
+  const metric = (val, label, note, ok) => { const d = el('div', 'panel metric'); d.append(el('b', null, val), el('span', null, label)); if (note) { const e = el('em', null, note); e.style.color = ok ? 'var(--good)' : 'var(--pen)'; d.append(e); } return d; };
+  ms.append(
+    metric(m.share + '%', 'of the talking was the rep', m.share <= 55 ? 'Good balance' : 'Aim for under 55%', m.share <= 55),
+    metric(String(m.qs), 'questions asked', m.qs >= 4 ? 'Good curiosity' : 'Aim for 4 or more', m.qs >= 4),
+    metric(m.facts + ' / ' + m.total, 'hidden facts uncovered', m.facts >= Math.ceil(m.total / 2) ? 'Solid discovery' : 'Most needs stayed hidden', m.facts >= Math.ceil(m.total / 2)),
+    metric(m.longest + ' words', 'longest rep turn', m.longest <= 45 ? 'Concise' : 'Monologue; keep turns short', m.longest <= 45)
+  );
+  v.append(ms);
+
+  const cols = el('div', 'cols');
+  // scores
+  const sc = el('div', 'panel sec'); sc.append(el('h3', null, 'Scores by parameter'));
+  ev.scores.forEach(x => {
+    const d = el('div', 'param');
+    const h = el('div', 'phead'); const l = el('div'); l.append(el('strong', null, x.parameter), document.createTextNode(' '), el('small', null, 'weight ' + x.weight));
+    const val = el('b', null, x.score + '/10'); val.style.color = colorFor(x.score);
+    h.append(l, val);
+    const bar = el('div', 'pbar'); const bi = el('i'); bi.style.width = x.score * 10 + '%'; bi.style.background = colorFor(x.score); bar.append(bi);
+    d.append(h, bar, el('p', 'quote', x.evidence === 'Not attempted' ? 'Not attempted' : '“' + x.evidence.replace(/^["“]|["”]$/g, '') + '”'), el('p', 'fb', x.feedback));
+    sc.append(d);
+  });
+  cols.append(sc);
+
+  // right column
+  const rc = el('div'); rc.style.cssText = 'display:flex;flex-direction:column;gap:18px;min-width:0';
+  const mo = el('div', 'panel sec'); mo.append(el('h3', null, 'Lines to say differently'));
+  if (!ev.moments.length) mo.append(el('p', 'hint', 'No specific lines flagged.'));
+  ev.moments.forEach(x => {
+    const d = el('div', 'moment');
+    if (Number.isFinite(x.turn)) d.append(el('span', 'turn', 'Turn ' + x.turn));
+    if (x.said) d.append(el('p', 'said', x.said));
+    if (x.issue) d.append(el('p', 'issue', x.issue));
+    d.append(el('p', 'better', x.better));
+    mo.append(d);
+  });
+  rc.append(mo);
+
+  const nx = el('div', 'panel sec'); nx.append(el('h3', null, 'For the next call'));
+  if (ev.strengths.length) { nx.append(el('span', 'label', 'Keep doing')); const u = el('ul', 'plain'); ev.strengths.forEach(t => u.append(el('li', null, t))); nx.append(u); }
+  if (ev.next_focus.length) { nx.append(el('span', 'label', 'Work on')); const u = el('ul', 'plain'); ev.next_focus.forEach(t => u.append(el('li', null, t))); nx.append(u); }
+  nx.append(el('span', 'label', 'What the customer was hiding'));
+  const fl = el('ul', 'factlist');
+  s.persona.hidden.forEach((f, i) => { const got = s.revealed.includes(i + 1); const li = el('li', got ? 'got' : 'miss'); li.append(el('b', null, got ? 'FOUND' : 'MISSED'), el('span', null, f)); fl.append(li); });
+  nx.append(fl);
+  rc.append(nx);
+  cols.append(rc);
+  v.append(cols);
+
+  // transcript
+  const tr = el('div', 'panel sec'); tr.append(el('h3', null, 'Transcript'));
+  const flagged = new Set(ev.moments.map(x => x.turn));
+  const ts = el('div', 'tscript');
+  s.turns.forEach((t, i) => {
+    const row = el('div', 'tl ' + t.who + (flagged.has(i) && t.who === 'rep' ? ' flag' : ''));
+    const tx = el('div', 't'); tx.append(el('b', null, t.who === 'rep' ? 'Rep' : s.persona.name.split(' ')[0]), document.createTextNode(t.text));
+    row.append(el('span', 'n', String(i)), tx); ts.append(row);
+  });
+  tr.append(ts); v.append(tr);
+
+  // actions
+  const ac = el('div', 'actions');
+  const retry = el('button', 'btn primary', isExample ? 'Start a practice call' : 'Retry same customer');
+  retry.addEventListener('click', () => { if (!isExample && personas[s.personaKey]) { pKey = s.personaKey; renderPersonaCards(); fillPersonaForm(); } isExample ? show('setup') : startCall(); });
+  const other = el('button', 'btn', 'Change setup'); other.addEventListener('click', () => show('setup'));
+  const copy = el('button', 'btn', 'Copy feedback');
+  copy.addEventListener('click', async () => {
+    const txt = [`Practice call review: ${overall}/100 (${s.persona.name}, ${s.difficulty})`, ev.summary, '',
+      ...ev.scores.map(x => `${x.parameter}: ${x.score}/10. ${x.feedback}`), '',
+      'Lines to say differently:', ...ev.moments.map(x => `- Said: "${x.said}"\n  Problem: ${x.issue}\n  Try instead: "${x.better}"`), '',
+      'Work on:', ...ev.next_focus.map(t => '- ' + t)].join('\n');
+    try { await navigator.clipboard.writeText(txt); copy.textContent = 'Copied'; }
+    catch { const r = document.createRange(); r.selectNodeContents(v); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); copy.textContent = 'Selected, press Ctrl+C'; }
+    setTimeout(() => copy.textContent = 'Copy feedback', 1800);
+  });
+  ac.append(retry, other, copy); v.append(ac);
+}
+
+// ---------- example review (shown until a real call is reviewed) ----------
+const EXAMPLE = {
+  snap: { persona: PERSONAS.vikram, personaKey: 'vikram', difficulty: 'medium', product: DEFAULT_PRODUCT, duration: '01:52', revealed: [1], mood: 52,
+    rubric: DEFAULT_RUBRIC,
+    turns: [
+      { who:'cust', text:'Hello, Vikram speaking.' },
+      { who:'rep', text:'Hi Vikram, this is Karan from Relay. We do WhatsApp automation for businesses. Do you have a minute?' },
+      { who:'cust', text:'I’ve got two minutes. What is it?' },
+      { who:'rep', text:'Great! So our platform does auto-replies, broadcast campaigns and CRM integration, and plans start at just ₹2,999 a month. Lots of logistics companies use it.' },
+      { who:'cust', text:'We already have a system for customer messages. Why would I switch?' },
+      { who:'rep', text:'Ours is much better and cheaper than most systems out there.' },
+      { who:'cust', text:'Everyone says that. Just send me an email.' },
+      { who:'rep', text:'Sure, but can I ask how your team handles delivery status questions today?' },
+      { who:'cust', text:'Honestly, two people spend half their day answering “where is my parcel” on WhatsApp.' },
+      { who:'rep', text:'That’s exactly what we automate. Could I show you a 15-minute demo this week?' },
+      { who:'cust', text:'Send me the details first. If it looks useful, I’ll call you.' }
+    ] },
+  ev: {
+    summary: 'Karan opened politely but pitched features before learning anything, and Vikram tried to end the call. One good question uncovered the real pain late, but the call ended without a booked next step.',
+    scores: [
+      { parameter:'Opening and rapport', score:6, evidence:'Do you have a minute?', feedback:'Asking permission was good, but there was no reason for the call that mattered to a logistics operations head.' },
+      { parameter:'Discovery', score:3, evidence:'can I ask how your team handles delivery status questions today?', feedback:'Only one discovery question, and it came after Vikram tried to end the call. Budget, timeline and who signs off were never explored.' },
+      { parameter:'Value pitch', score:3, evidence:'our platform does auto-replies, broadcast campaigns and CRM integration', feedback:'A feature list before knowing any need. Nothing was tied to Vikram’s situation until the very end.' },
+      { parameter:'Objection handling', score:2, evidence:'Ours is much better and cheaper than most systems out there.', feedback:'An unproven claim instead of asking what the current system is. It made Vikram more skeptical.' },
+      { parameter:'Closing', score:5, evidence:'Could I show you a 15-minute demo this week?', feedback:'A clear ask linked to the pain, but with no specific times it was easy to deflect.' },
+      { parameter:'Listening and tone', score:6, evidence:'That’s exactly what we automate.', feedback:'Picked up on the parcel problem quickly and stayed polite under pressure.' }
+    ],
+    moments: [
+      { turn:3, said:'So our platform does auto-replies, broadcast campaigns and CRM integration, and plans start at just ₹2,999 a month.', issue:'Pitched features and price before learning anything about his business.', better:'Before I tell you about us, when customers message you on WhatsApp today, how does your team keep up?' },
+      { turn:5, said:'Ours is much better and cheaper than most systems out there.', issue:'Dismissed the objection with a claim he had no reason to believe.', better:'Fair enough. What are you using today, and what’s the one thing about it you’d change?' },
+      { turn:9, said:'Could I show you a 15-minute demo this week?', issue:'Vague ask with no times, easy to push off with “send details”.', better:'If we could take those parcel questions off your team, would 15 minutes on Thursday at 4 or Friday at 11 be worth it?' }
+    ],
+    strengths: ['Recovered with a good open question when the call was slipping', 'Linked the demo ask to the pain Vikram shared'],
+    next_focus: ['Ask two or three discovery questions before describing any feature', 'Answer objections with a question, not a claim', 'Offer two specific time slots when asking for a meeting']
+  }
+};
+function showExample() {
+  const s = EXAMPLE.snap;
+  const ev = { ...EXAMPLE.ev, scores: EXAMPLE.ev.scores.map(x => ({ ...x, weight: (DEFAULT_RUBRIC.find(r => r.name === x.parameter) || { weight: 0 }).weight })) };
+  renderReview(s, ev, true);
+}
+
+// ---------- status ----------
+function updateStatus() {
+  const st = $('#status');
+  st.classList.toggle('live', !!sample); st.classList.toggle('off', !sample);
+  $('#statusText').textContent = sample ? (live ? 'Live voice call · just talk' : SR ? 'Live AI customer · mic ready' : 'Live AI customer · use Chrome for mic') : 'AI not connected';
+  $('#startCall').textContent = sample ? 'Start practice call' : 'See the example review';
+}
+
+// ---------- local AI bridge (server.js forwards to the Claude API) ----------
+function parseLoose(t) {
+  t = String(t || '').trim();
+  try { return JSON.parse(t); } catch {}
+  const f = t.match(/```(?:json)?\s*([\s\S]*?)```/); if (f) try { return JSON.parse(f[1]); } catch {}
+  const a = Math.min(...['{','['].map(c => t.indexOf(c)).filter(i => i >= 0)), b = Math.max(t.lastIndexOf('}'), t.lastIndexOf(']'));
+  if (a >= 0 && b > a) try { return JSON.parse(t.slice(a, b + 1)); } catch {}
+  throw { code: 'invalid_json', message: 'Reply was not JSON', text: t };
+}
+function localSample() {
+  const ask = async (prompt, opts = {}) => {
+    let res;
+    try {
+      res = await fetch('/api/ask', { method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ prompt, tier: opts.modelTier === 'quick' ? 'quick' : 'default' }), signal: opts.signal });
+    } catch (e) { throw { code: e && e.name === 'AbortError' ? 'cancelled' : 'upstream_error', message: String(e) }; }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { console.error('[practice-room]', data.error); throw { code: res.status === 429 ? 'rate_limited' : 'upstream_error', message: data.error || 'HTTP ' + res.status }; }
+    return data.text;
+  };
+  const fn = async (prompt, opts) => ({ text: await ask(prompt, opts), truncated: false });
+  fn.json = async (prompt, opts) => parseLoose(await ask(prompt, opts));
+  return fn;
+}
+
+// ---------- boot ----------
+renderPersonaCards(); fillPersonaForm(); renderRubric(); syncStart(); showExample(); setCallUi();
+$('#tab-call').disabled = false;
+(async () => {
+  try { const h = await (await fetch('/api/health')).json(); sample = h.ok ? localSample() : null; live = !!(h.live && window.WebSocket && window.AudioWorkletNode); }
+  catch { sample = null; }
+  updateStatus();
+  if (!sample) $('#statusText').textContent = 'No API key: add it to .env and restart';
+  if (live) {
+    $('#micBtn').hidden = false; $('#micBtn').title = 'Mute or unmute your mic'; $('#micBtn').setAttribute('aria-label', 'Mute or unmute your mic');
+    $('#say').placeholder = 'Just talk. Or type a line if you need to…';
+  } else if (!SR) addLine('note', 'This browser has no speech recognition. Use Google Chrome to talk to the customer.');
+})();
+})();
+</script>
